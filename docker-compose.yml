@@ -2,6 +2,7 @@ version: "3"
 
 x-django-tbl: &django-tpl
   build: .
+  restart: unless-stopped
   environment: &django-env-tpl
     DATABASE_URL: "postgres://cwa_notifier:changeme@db/cwa_notifier"
     CACHE_URL: "rediscache://redis"
@@ -22,6 +23,7 @@ x-django-tbl: &django-tpl
 services:
   db:
     image: postgres
+    restart: unless-stopped
     volumes:
       - ./data/db:/var/lib/postgresql/data
     environment:
@@ -31,15 +33,18 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
+    restart: unless-stopped
     hostname: rabbitmq
     volumes:
       - ./data/rabbitmq:/var/lib/rabbitmq
 
   redis:
     image: redis:alpine
+    restart: unless-stopped
 
   nginx:
     build: .deployment/nginx
+    restart: unless-stopped
     volumes:
       - ./mediafiles:/var/www/html/media:ro
       - staticfiles:/var/www/html/static:ro
