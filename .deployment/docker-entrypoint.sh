@@ -10,8 +10,8 @@ done
 
 if [ "x$DJANGO_MANAGEPY_MIGRATE" = 'xon' ]; then
     python manage.py migrate --noinput
+    python manage.py collectstatic --no-input --clear
     #python manage.py compilemessages
-    #python manage.py collectstatic --no-input --clear
 fi
 
 exec "$@"
