@@ -42,9 +42,11 @@ DEBUG = env.bool("DEBUG")
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 
+# SECURITY WARNING: only use this behind a trusted reverse proxy!
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
-
 INSTALLED_APPS = [
     'location',
     'app_telegram',
