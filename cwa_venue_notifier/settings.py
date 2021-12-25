@@ -41,6 +41,7 @@ SECRET_KEY = 'django-insecure-a6ll1q%3v&x3jd#fj94ykx)j0g&u+-k2bemn)6p#_b5f^ovb%x
 DEBUG = env.bool("DEBUG")
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
+CSRF_TRUSTED_ORIGINS = ALLOWED_HOSTS
 
 # SECURITY WARNING: only use this behind a trusted reverse proxy!
 USE_X_FORWARDED_HOST = True
