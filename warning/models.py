@@ -39,8 +39,12 @@ class TraceWarningPackage(models.Model):
     def filepath(self):
         return os.path.join(settings.PACKAGES_DIR, self.filename)
 
+    def __str__(self):
+        return f"{self.region}/v{self.api_version}/{self.interval_number}"
+
     class Meta:
         unique_together = ("api_version", "interval_number", "region")
+        ordering = ['-interval_number']
 
 
 class CheckInRecordType:
