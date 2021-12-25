@@ -1,0 +1,11 @@
+.deployment/
+!.deployment/docker-entrypoint.sh
+.git/
+.env.local
+venv/
+Dockerfile
+docker-compose.yml
+data/
+.idea/
+staticfiles/
+mediafiles/
