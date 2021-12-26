@@ -2,6 +2,7 @@ import datetime
 import hashlib
 import hmac
 import os
+from typing import Union
 
 from django.conf import settings
 from django.db import models
@@ -9,19 +10,35 @@ from django.db import models
 from django.utils.translation import gettext as _
 
 from Crypto.Cipher import AES
+
+from location.models import Location
 from proto import trace_warning_pb2
+
+
+class CustomForeignKey(models.ForeignKey):
+    __attname: str
+
+    def __init__(self, *args, **kwargs):
+        self.__attname = kwargs.pop("attname", None)
+        super(CustomForeignKey, self).__init__(*args, **kwargs)
+
+    def get_attname(self):
+        return self.__attname or super(CustomForeignKey, self).get_attname()
 
 
 class TraceWarningPackage(models.Model):
     api_version = models.IntegerField(
+        editable=False,
         verbose_name=_("API Version"),
         help_text=_("Version of the API"),
     )
     interval_number = models.BigIntegerField(
+        editable=False,
         verbose_name=_("Interval Number"),
-        help_text=_("Interval in 10 minute steps since UNIX epoch"),
+        help_text=_("Interval in hours since UNIX epoch"),
     )
     region = models.CharField(
+        editable=False,
         max_length=2,
         verbose_name=_("Region"),
         help_text=_("For example 'DE'"),
@@ -29,6 +46,7 @@ class TraceWarningPackage(models.Model):
 
     imported_at = models.DateTimeField(
         null=True,
+        verbose_name=_("Imported at"),
     )
 
     @property
@@ -39,12 +57,20 @@ class TraceWarningPackage(models.Model):
     def filepath(self):
         return os.path.join(settings.PACKAGES_DIR, self.filename)
 
-    def __str__(self):
+    @property
+    def name(self):
         return f"{self.region}/v{self.api_version}/{self.interval_number}"
+
+    @property
+    def interval(self):
+        return datetime.datetime(1970, 1, 1, 0, 0) + datetime.timedelta(hours=self.interval_number)
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         unique_together = ("api_version", "interval_number", "region")
-        ordering = ['-interval_number']
+        ordering = ['-interval_number', 'region', '-api_version']
 
 
 class CheckInRecordType:
@@ -59,18 +85,24 @@ class CheckInRecordType:
 
 class CheckInRecord:
     start_interval_number = models.BigIntegerField(
+        editable=False,
         verbose_name=_("Start interval number"),
         help_text=_("Start interval in 10 minute steps since UNIX epoch"),
     )
     period = models.BigIntegerField(
+        editable=False,
         verbose_name=_("Period"),
         help_text=_("Warning duration in 10 minute steps"),
     )
     transmission_risk_level = models.IntegerField(
+        editable=False,
         verbose_name=_("Transmission Risk Level"),
         # help_text=_(""),
     )
-    type = models.CharField(choices=CheckInRecordType.choices)
+    type = models.CharField(
+        editable=False,
+        choices=CheckInRecordType.choices,
+    )
 
     @property
     def start(self) -> datetime.datetime:
@@ -90,26 +122,43 @@ class TraceTimeIntervalWarning(models.Model):
     package = models.ForeignKey(
         TraceWarningPackage,
         on_delete=models.CASCADE,
+        editable=False,
         verbose_name=_("Package"),
         help_text=_("The warning package, where this time interval warning comes from"),
     )
     position = models.IntegerField(
+        editable=False,
         # verbose_name=_("Location ID Hash"),
         # help_text=_("SHA256 hash of the location ID"),
     )
-    location_id_hash = models.BinaryField(
-        verbose_name=_("Location ID Hash"),
-        help_text=_("SHA256 hash of the location ID"),
+    location = CustomForeignKey(
+        Location,
+        on_delete=models.DO_NOTHING,
+        to_field="location_id_hash",
+        db_column="location_id_hash",
+        db_constraint=False,
+        attname='location_id_hash',
+        editable=False,
     )
+    location_id_hash: memoryview
+    #location_id_hash = models.BinaryField(
+    #    verbose_name=_("Location ID Hash"),
+    #    help_text=_("SHA256 hash of the location ID"),
+    #    db_column="location_id_hash",
+    #)
+
     start_interval_number = models.BigIntegerField(
+        editable=False,
         verbose_name=_("Start interval number"),
         help_text=_("Start interval in 10 minute steps since UNIX epoch"),
     )
     period = models.BigIntegerField(
+        editable=False,
         verbose_name=_("Period"),
         help_text=_("Warning duration in 10 minute steps"),
     )
     transmission_risk_level = models.BigIntegerField(
+        editable=False,
         verbose_name=_("Transmission Risk Level"),
         # help_text=_(""),
     )
@@ -123,34 +172,58 @@ class TraceTimeIntervalWarning(models.Model):
         result.type = CheckInRecordType.TraceTimeIntervalWarning
         return result
 
+    @property
+    def name(self):
+        return f"TraceTimeIntervalWarning  {self.package}#{self.position}"
+
+    def __str__(self):
+        return self.name
+
     class Meta:
         unique_together = ("package", "position")
+        ordering = ['-package', '-position']
 
 
 class CheckInProtectedReport(models.Model):
     package = models.ForeignKey(
         TraceWarningPackage,
         on_delete=models.CASCADE,
+        editable=False,
         verbose_name=_("Package"),
         help_text=_("The warning package, where this protected check-in report comes from"),
     )
     position = models.IntegerField(
+        editable=False,
         # verbose_name=_("Location ID Hash"),
         # help_text=_("SHA256 hash of the location ID"),
     )
-    location_id_hash: bytes = models.BinaryField(
-        verbose_name=_("Location ID Hash"),
-        help_text=_("SHA256 hash of the location ID"),
+    location = CustomForeignKey(
+        Location,
+        on_delete=models.DO_NOTHING,
+        to_field="location_id_hash",
+        db_column="location_id_hash",
+        db_constraint=False,
+        attname='location_id_hash',
+        editable=False,
     )
+    location_id_hash: memoryview
+    # location_id_hash = models.BinaryField(
+    #    verbose_name=_("Location ID Hash"),
+    #    help_text=_("SHA256 hash of the location ID"),
+    #    db_column="location_id_hash",
+    # )
     iv: bytes = models.BinaryField(
+        editable=False,
         verbose_name=_("IV"),
         # help_text=_(""),
     )
     encrypted_check_in_record: bytes = models.BinaryField(
+        editable=False,
         verbose_name=_("Encrypted Check-In Record"),
         # help_text=_(""),
     )
     mac: bytes = models.BinaryField(
+        editable=False,
         verbose_name=_("MAC"),
         # help_text=_(""),
     )
@@ -184,7 +257,20 @@ class CheckInProtectedReport(models.Model):
 
         return result
 
-        # TODO: create object from protobuf & return
+    @property
+    def name(self):
+        return f"CheckInProtectedReport {self.package}#{self.position}"
+
+    @property
+    def check_in_record(self) -> Union[CheckInRecord, None]:
+        try:
+            return self.decrypt(self.location.location_id)
+        except:
+            return None
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         unique_together = ("package", "position")
+        ordering = ['-package', '-position']

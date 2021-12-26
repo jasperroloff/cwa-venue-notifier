@@ -1,6 +1,7 @@
 import base64
 import hashlib
 
+from django.core.exceptions import ValidationError
 from django.db import models
 import urllib.parse
 
@@ -15,11 +16,14 @@ class Location(models.Model):
         max_length=1024,
         verbose_name=_("URL"),
         help_text=_("The url which is encoded in the QRCode"),
+        # editable=False,
     )
 
     location_id_hash = models.BinaryField(
         verbose_name=_("Location ID Hash"),
-        help_text=_("SHA256 hash of the CWA location ID")
+        help_text=_("SHA256 hash of the CWA location ID"),
+        unique=True,
+        editable=False,
     )
 
     @property
@@ -37,13 +41,30 @@ class Location(models.Model):
     def location_id(self) -> bytes:
         return hashlib.sha256("CWA-GUID".encode('ascii') + self.payload).digest()
 
+    @property
+    def description(self) -> str:
+        return self.to_object().locationData.description
+
+    @property
+    def address(self) -> str:
+        return self.to_object().locationData.address
+
+    def __str__(self):
+        return f"{self.description} ({self.provider})"
+
     def _get_location_id_hash(self) -> bytes:
         return hashlib.sha256(self.location_id).digest()
 
     def save(self, *args, **kwargs):
-        # calculate location_id_hash automatically before save
-        self.location_id_hash = self._get_location_id_hash()
+        self.full_clean()
         super(Location, self).save(*args, **kwargs)
+
+    def clean(self):
+        try:
+            # calculate location_id_hash automatically before save
+            self.location_id_hash = self._get_location_id_hash()
+        except Exception as e:
+            raise ValidationError(e)
 
     @classmethod
     def decode_payload(cls, url: str) -> bytes:
