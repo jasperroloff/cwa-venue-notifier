@@ -115,8 +115,6 @@ def import_package(package: TraceWarningPackage):
     with open(package.filepath, 'rb') as package_file:
         zip_bytes: bytes = package_file.read()
         process_package(zip_bytes, package)
-        package.imported_at = timezone.now()
-        package.save()
 
 
 @shared_task
