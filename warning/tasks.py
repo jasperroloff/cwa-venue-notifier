@@ -82,21 +82,19 @@ def process_check_in_protected_report(item_bytes: bytes, package: TraceWarningPa
 
 
 def process_package(zip_bytes: bytes, package: TraceWarningPackage):
-    if len(zip_bytes) == 0:
-        return
+    if not len(zip_bytes) == 0:
+        with zipfile.ZipFile(io.BytesIO(zip_bytes)) as package_zip:
+            with package_zip.open("export.bin") as export_bin:
+                package_bytes = export_bin.read()
+                package_obj = trace_warning_pb2.TraceWarningPackage.FromString(package_bytes)
 
-    with zipfile.ZipFile(io.BytesIO(zip_bytes)) as package_zip:
-        with package_zip.open("export.bin") as export_bin:
-            package_bytes = export_bin.read()
-            package_obj = trace_warning_pb2.TraceWarningPackage.FromString(package_bytes)
+                for index, item in enumerate(package_obj.timeIntervalWarnings):
+                    item: trace_warning_pb2.TraceTimeIntervalWarning
+                    process_time_interval_warning(item.SerializeToString(), package, index)
 
-            for index, item in enumerate(package_obj.timeIntervalWarnings):
-                item: trace_warning_pb2.TraceTimeIntervalWarning
-                process_time_interval_warning(item.SerializeToString(), package, index)
-
-            for index, item in enumerate(package_obj.checkInProtectedReports):
-                item: trace_warning_pb2.CheckInProtectedReport
-                process_check_in_protected_report(item.SerializeToString(), package, index)
+                for index, item in enumerate(package_obj.checkInProtectedReports):
+                    item: trace_warning_pb2.CheckInProtectedReport
+                    process_check_in_protected_report(item.SerializeToString(), package, index)
 
     package.imported_at = timezone.now()
     package.save()
