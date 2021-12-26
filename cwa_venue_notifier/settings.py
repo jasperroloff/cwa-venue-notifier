@@ -101,17 +101,18 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 PACKAGES_DIR = os.path.join(DATA_DIR, "packages")
 
 # Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+# https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 DATABASES = {
-    # read os.environ['DATABASE_URL'] and raises ImproperlyConfigured exception if not found
-    'default': env.db(),
+    'default': env.db()
 }
+
+# Cache
+# https://docs.djangoproject.com/en/4.0/ref/settings/#caches
 
 CACHES = {
-    'default': env.cache(),
+    'default': env.cache(backend="django.core.cache.backends.redis.RedisCache")
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
