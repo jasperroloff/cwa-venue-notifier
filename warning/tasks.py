@@ -10,7 +10,6 @@ from celery import shared_task, group
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils import timezone
-from django.core.files.storage import default_storage
 
 import app_telegram.telegram
 from location.models import Location
@@ -99,6 +98,9 @@ def process_package(zip_bytes: bytes, package: TraceWarningPackage):
                 item: trace_warning_pb2.CheckInProtectedReport
                 process_check_in_protected_report(item.SerializeToString(), package, index)
 
+    package.imported_at = timezone.now()
+    package.save()
+
 
 @shared_task
 def download_package(url: str, package: TraceWarningPackage):
@@ -106,8 +108,6 @@ def download_package(url: str, package: TraceWarningPackage):
     with open(package.filepath, 'wb') as file:
         file.write(zip_bytes)
     process_package(zip_bytes, package)
-    package.imported_at = timezone.now()
-    package.save()
 
 
 @shared_task
@@ -152,7 +152,7 @@ def download_packages(force: bool = False) -> int:
 @shared_task
 def import_packages(force: bool) -> int:
     count = 0
-    files: List[str] = default_storage.listdir(settings.PACKAGES_DIR)[1]
+    files: List[str] = os.listdir(settings.PACKAGES_DIR)
     tasks = []
 
     os.makedirs(settings.PACKAGES_DIR, exist_ok=True)
