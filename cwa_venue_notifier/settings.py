@@ -176,7 +176,7 @@ CELERY_BROKER_URL = env.url("BROKER_URL")
 CELERY_BEAT_SCHEDULE = {
     "download_packages": {
         "task": "warning.tasks.download_packages",
-        "schedule": crontab(hour="*/1"),
+        "schedule": crontab(hour="*", minute="*/10"),  # run every 10 minutes
     },
 }
 
