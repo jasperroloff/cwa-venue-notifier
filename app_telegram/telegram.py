@@ -66,7 +66,19 @@ def process_urls(update: Update, urls: List[str]):
 
 
 def on_start(update: Update, context: CallbackContext):
-    update.message.reply_text(f'Hello {update.effective_user.first_name}')
+    update.message.reply_text(
+        f'Hello {update.effective_user.first_name}!'
+        f'\n'
+        f'I am the unofficial Corona-Warn-App Warning Bot!\n'
+        f'Just send me a CWA QR-code and I can show you recent warnings for that code.'
+        f'\n'
+        f'You can also subscribe for future warnings.'
+        f'\n\n'
+        f'Hint: If the QR-code is not recognized by me, try sending it in a higher resolution and without compression.'
+        f'\n'
+        f'Another alternative is sending the URL from the code as text.'
+        f'\n\n'
+        f'Stay safe!')
     logger.warning(f'New User: {update.effective_user.username}')
 
 
