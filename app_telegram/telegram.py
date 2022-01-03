@@ -31,8 +31,8 @@ def send_location_data(update: Update, location: Location):
     update.message.reply_html(
         render_to_string("telegram/location_data.html", {'payload': location.to_object(), 'location': location}),
         reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("Subscribe", callback_data=f"subscribe {location.pk}")],
-            [InlineKeyboardButton("Show Warnings", callback_data=f"get_warnings {location.pk}")],
+            [InlineKeyboardButton("Subscribe", callback_data=f"subscribe {location.uuid}")],
+            [InlineKeyboardButton("Show Warnings", callback_data=f"get_warnings {location.uuid}")],
             [InlineKeyboardButton("Check-In", url=location.url)],
         ])
     )
@@ -127,7 +127,7 @@ def on_callback(update: Update, context: CallbackContext):
         command, *args = cb_data.split(" ")
 
         if command == "subscribe" and len(args) == 1:
-            location = Location.objects.get(pk=int(args[0]))
+            location = Location.objects.get(uuid=args[0])
             subscription, created = WarningSubscription.objects.get_or_create(
                 location=location,
                 chat=update.effective_chat.id,
@@ -137,7 +137,7 @@ def on_callback(update: Update, context: CallbackContext):
             else:
                 update.effective_chat.send_message("Subscription renewed!")
         elif command == "get_warnings" and len(args) == 1:
-            location = Location.objects.get(pk=int(args[0]))
+            location = Location.objects.get(uuid=args[0])
 
             check_in_records: List[Tuple[TraceWarningPackage, CheckInRecord]] = []
 

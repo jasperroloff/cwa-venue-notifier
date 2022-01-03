@@ -1,5 +1,6 @@
 import base64
 import hashlib
+import uuid
 
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -11,6 +12,14 @@ from proto.cwa_location_pb2 import QRCodePayload
 
 
 class Location(models.Model):
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        editable=False,
+        verbose_name=_("UUID"),
+        help_text=_("Used as unique identifier to clients"),
+    )
+
     url = models.URLField(
         unique=True,
         max_length=1024,
