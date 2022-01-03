@@ -9,8 +9,9 @@ import pyzbar.pyzbar
 from PIL import Image
 from django.conf import settings
 from django.template.loader import render_to_string
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, Bot
-from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackContext, CallbackQueryHandler, Updater
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, Bot, BotCommand
+from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackContext, CallbackQueryHandler, Updater, \
+    Dispatcher
 
 from app_telegram.models import WarningSubscription
 from location.models import Location
@@ -166,6 +167,11 @@ def on_callback(update: Update, context: CallbackContext):
             update.effective_chat.send_message("Error: %s" % update.callback_query.data)
 
 
+def on_get_subscriptions(update: Update, context: CallbackContext):
+    for subscription in WarningSubscription.objects.filter(chat=update.effective_chat.id):
+        send_location_data(update, subscription.location)
+
+
 def get_updater() -> Updater:
     return Updater(settings.TELEGRAM_TOKEN)
 
@@ -185,15 +191,22 @@ def run():
     logger.info("Loading handlers for telegram bot")
 
     updater = get_updater()
+    bot: Bot = updater.bot
+    dispatcher: Dispatcher = updater.dispatcher
+    bot.setMyCommands([
+        BotCommand("start", "Show welcome message"),
+        BotCommand("subscriptions", "Show subscriptions"),
+    ])
 
-    updater.dispatcher.add_handler(CommandHandler("start", on_start))
-    updater.dispatcher.add_handler(MessageHandler(Filters.text, on_text))
-    updater.dispatcher.add_handler(MessageHandler(Filters.photo, on_photo))
-    updater.dispatcher.add_handler(MessageHandler(Filters.document, on_document))
-    updater.dispatcher.add_handler(CallbackQueryHandler(on_callback))
+    dispatcher.add_handler(CommandHandler("start", on_start))
+    dispatcher.add_handler(CommandHandler("subscriptions", on_get_subscriptions))
+    dispatcher.add_handler(MessageHandler(Filters.text, on_text))
+    dispatcher.add_handler(MessageHandler(Filters.photo, on_photo))
+    dispatcher.add_handler(MessageHandler(Filters.document, on_document))
+    dispatcher.add_handler(CallbackQueryHandler(on_callback))
 
     # TODO: Error handler
-    # updater.dispatcher.add_error_handler(error)
+    # dispatcher.add_error_handler(error)
 
     updater.start_polling()
     logger.warning("Running")
