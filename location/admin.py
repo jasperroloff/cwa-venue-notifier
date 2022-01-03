@@ -63,8 +63,8 @@ class CheckInProtectedReportInline(PackageContentInline):
 
 
 class LocationAdmin(admin.ModelAdmin):
-    fields = ('description', 'address', 'provider', 'url')
-    readonly_fields = ('description', 'address', 'provider', 'url')
+    fields = ('description', 'address', 'provider', 'url', 'uuid')
+    readonly_fields = ('description', 'address', 'provider', 'url', 'uuid')
     list_display = ('description', 'provider')
 
     inlines = [
