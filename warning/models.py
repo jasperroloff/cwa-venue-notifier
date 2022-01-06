@@ -3,6 +3,7 @@ import hashlib
 import hmac
 import os
 from typing import Union
+from zoneinfo import ZoneInfo
 
 from django.conf import settings
 from django.db import models
@@ -63,7 +64,9 @@ class TraceWarningPackage(models.Model):
 
     @property
     def interval(self):
-        return datetime.datetime(1970, 1, 1, 0, 0) + datetime.timedelta(hours=self.interval_number)
+        return (
+                datetime.datetime(1970, 1, 1, 0, 0) + datetime.timedelta(hours=self.interval_number)
+        ).astimezone(tz=ZoneInfo(settings.TIME_ZONE))
 
     def __str__(self):
         return self.name
@@ -106,8 +109,10 @@ class CheckInRecord:
 
     @property
     def start(self) -> datetime.datetime:
-        return datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)\
-               + datetime.timedelta(minutes=self.start_interval_number * 10)
+        return (
+                datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
+                + datetime.timedelta(minutes=self.start_interval_number * 10)
+        ).astimezone(tz=ZoneInfo(settings.TIME_ZONE))
 
     @property
     def end(self) -> datetime.datetime:
