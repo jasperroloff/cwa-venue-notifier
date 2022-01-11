@@ -10,6 +10,10 @@ WORKDIR /usr/src/app
 # update package lists
 RUN apk update
 
+# configure timezone
+RUN apk add --no-cache tzdata
+ENV TZ Europe/Berlin
+
 # requirements for pyscop2
 RUN apk add postgresql-dev gcc python3-dev musl-dev
 
@@ -27,6 +31,9 @@ RUN apk add libffi libffi-dev libheif libheif-dev libde265-dev
 
 # requirements for pyzbar
 RUN apk add zbar zbar-dev
+
+# requirements for pdf2image
+RUN apk add poppler-utils
 
 # wsgi server for production deployment
 RUN pip install gunicorn
