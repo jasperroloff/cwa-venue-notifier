@@ -86,7 +86,7 @@ class PackageContentAdmin(admin.ModelAdmin):
 
     @admin.display(description=_("Start"))
     def check_in_record_start(self, obj: Union[TraceTimeIntervalWarning, CheckInProtectedReport]):
-        return localize(obj.check_in_record.start)
+        return localize(obj.check_in_record.start, use_l10n=True)
 
     @admin.display(description=_("Duration"))
     def check_in_record_duration(self, obj: Union[TraceTimeIntervalWarning, CheckInProtectedReport]):

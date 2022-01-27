@@ -7,6 +7,7 @@ from django.db import models
 import urllib.parse
 
 from django.utils.translation import gettext as _
+from google.protobuf.message import DecodeError
 
 from proto.cwa_location_pb2 import QRCodePayload
 
@@ -52,11 +53,17 @@ class Location(models.Model):
 
     @property
     def description(self) -> str:
-        return self.to_object().locationData.description
+        try:
+            return self.to_object().locationData.description
+        except DecodeError:
+            return "(error)"
 
     @property
     def address(self) -> str:
-        return self.to_object().locationData.address
+        try:
+            return self.to_object().locationData.address
+        except DecodeError:
+            return "(error)"
 
     def __str__(self):
         return f"{self.description} ({self.provider})"

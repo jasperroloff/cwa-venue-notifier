@@ -1,15 +1,9 @@
-import re
 import os.path
-from typing import List
 
-from click import group
-from django.core.files.storage import default_storage, Storage
 from django.core.management.base import BaseCommand
 from django.conf import settings
-from django.utils import timezone
 
-from warning.models import TraceWarningPackage
-from warning.tasks import process_package, download_packages, import_packages
+from warning.tasks import download_packages, import_packages
 
 
 class Command(BaseCommand):

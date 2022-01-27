@@ -43,11 +43,11 @@ class PackageContentInline(admin.StackedInline):
 
     @admin.display(description=_("Start"))
     def check_in_record_start(self, obj: Union[TraceTimeIntervalWarning, CheckInProtectedReport]):
-        return localize(obj.check_in_record.start)
+        return localize(obj.check_in_record.start, use_l10n=True)
 
     @admin.display(description=_("Duration"))
     def check_in_record_duration(self, obj: Union[TraceTimeIntervalWarning, CheckInProtectedReport]):
-        return localize(obj.check_in_record.duration)
+        return localize(obj.check_in_record.duration, use_l10n=True)
 
     @admin.display(description=_("Transmission Risk Level"))
     def check_in_record_transmission_risk_level(self, obj: Union[TraceTimeIntervalWarning, CheckInProtectedReport]):

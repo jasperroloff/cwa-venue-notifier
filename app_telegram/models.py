@@ -8,7 +8,6 @@ class WarningSubscription(models.Model):
         Location,
         on_delete=models.CASCADE,
         verbose_name="Venue",
-        #help_text="",
     )
     chat = models.BigIntegerField(
         verbose_name="Chat ID",
