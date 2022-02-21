@@ -1,6 +1,6 @@
-version: "3"
+version: "3.4"
 
-x-django-tbl: &django-tpl
+x-django-tpl: &django-tpl
   build: .
   restart: unless-stopped
   environment: &django-env-tpl
