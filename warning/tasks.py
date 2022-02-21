@@ -10,6 +10,7 @@ from celery import shared_task, group
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils import timezone
+from google.protobuf.message import DecodeError
 
 import app_telegram.telegram
 from location.models import Location
@@ -45,7 +46,7 @@ def send_warning(item: Union[CheckInProtectedReport, TraceTimeIntervalWarning], 
                 }),
                 parse_mode="HTML",
             )
-    except Location.DoesNotExist:
+    except Location.DoesNotExist or DecodeError:
         pass
 
 

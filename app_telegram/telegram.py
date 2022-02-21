@@ -9,6 +9,7 @@ import pyzbar.pyzbar
 from PIL import Image
 from django.conf import settings
 from django.template.loader import render_to_string
+from google.protobuf.message import DecodeError
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, Bot, BotCommand
 from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackContext, CallbackQueryHandler, Updater, \
     Dispatcher
@@ -29,14 +30,17 @@ def read_qr_code(images: List) -> List[str]:
 
 
 def send_location_data(update: Update, location: Location):
-    update.message.reply_html(
-        render_to_string("telegram/location_data.html", {'payload': location.to_object(), 'location': location}),
-        reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("Subscribe", callback_data=f"subscribe {location.uuid}")],
-            [InlineKeyboardButton("Show Warnings", callback_data=f"get_warnings {location.uuid}")],
-            [InlineKeyboardButton("Check-In", url=location.url)],
-        ])
-    )
+    try:
+        update.message.reply_html(
+            render_to_string("telegram/location_data.html", {'payload': location.to_object(), 'location': location}),
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("Subscribe", callback_data=f"subscribe {location.uuid}")],
+                [InlineKeyboardButton("Show Warnings", callback_data=f"get_warnings {location.uuid}")],
+                [InlineKeyboardButton("Check-In", url=location.url)],
+            ])
+        )
+    except DecodeError:
+        update.message.reply_text("Error: couldn't decode CWA payload")
 
 
 def process_qr_code_images(update: Update, images: List):
@@ -154,15 +158,18 @@ def on_callback(update: Update, context: CallbackContext):
                 check_in_records.sort(key=lambda r: r[1].start_interval_number)
 
                 for package, record in check_in_records:
-                    location_description = location.to_object().locationData.description
-                    update.effective_chat.send_message(
-                        text=render_to_string("telegram/check_in_record.html", {
-                            'record': record,
-                            'location': location_description,
-                            'package': package,
-                        }),
-                        parse_mode="HTML",
-                    )
+                    try:
+                        location_description = location.to_object().locationData.description
+                        update.effective_chat.send_message(
+                            text=render_to_string("telegram/check_in_record.html", {
+                                'record': record,
+                                'location': location_description,
+                                'package': package,
+                            }),
+                            parse_mode="HTML",
+                        )
+                    except DecodeError:
+                        continue
         else:
             update.effective_chat.send_message("Error: %s" % update.callback_query.data)
 

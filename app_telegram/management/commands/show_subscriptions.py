@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from google.protobuf.message import DecodeError
 from tabulate import tabulate
 
 import app_telegram.telegram
@@ -15,12 +16,15 @@ class Command(BaseCommand):
         rows = []
         bot = app_telegram.telegram.get_bot()
         for subscription in WarningSubscription.objects.all():
-            rows.append([
-                subscription.pk,
-                subscription.chat,
-                app_telegram.telegram.get_username_from_chat_id(subscription.chat, bot),
-                subscription.location.pk,
-                subscription.location.to_object().locationData.description,
-            ])
+            try:
+                rows.append([
+                    subscription.pk,
+                    subscription.chat,
+                    app_telegram.telegram.get_username_from_chat_id(subscription.chat, bot),
+                    subscription.location.pk,
+                    subscription.location.to_object().locationData.description,
+                ])
+            except DecodeError:
+                continue
 
         print(tabulate(rows, headers=['ID', 'Chat ID', 'Username', 'Location ID', 'Description'], tablefmt='orgtbl'))
