@@ -1,3 +1,24 @@
+FROM node:alpine as builder-node
+
+# set work directory
+WORKDIR /usr/src/app
+
+# copy requirements.txt only (better for caching)
+COPY package.json ./
+
+# run yarn install
+RUN yarn install
+
+# copy js/css source
+COPY static ./static
+
+# copy webpack conf
+COPY webpack.config.js ./
+
+# run webpack
+RUN npx webpack --config webpack.config.js --mode=production
+
+
 FROM python:3-alpine
 
 # set environment variables
@@ -49,6 +70,10 @@ RUN pip install -r requirements.txt
 
 # copy project dir
 COPY . /usr/src/app
+
+# copy webpack output
+COPY --from=builder-node /usr/src/app/webpack-stats.json ./
+COPY --from=builder-node /usr/src/app/static/webpack_bundles ./static/webpack_bundles
 
 # copy entrypoint
 ADD .deployment/docker-entrypoint.sh /

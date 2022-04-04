@@ -16,6 +16,7 @@ from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackContex
 
 from app_telegram.models import WarningSubscription
 from location.models import Location
+from location.utils import bytes_to_images, FileToImagesError
 from warning.models import TraceTimeIntervalWarning, CheckInProtectedReport, CheckInRecord, TraceWarningPackage
 
 logger = logging.getLogger(__name__)
@@ -58,7 +59,7 @@ def process_urls(update: Update, urls: List[str]):
 
     for url in urls:
         try:
-            Location.decode_payload(url)
+            Location.get_payload_from_url(url)
         except Exception as e:
             update.effective_chat.send_message(
                 text=f"URL could not be parsed:\n{e}",
@@ -98,26 +99,11 @@ def on_document(update: Update, context: CallbackContext):
     if update.message.document:
         doc = update.message.document
 
-        if doc.mime_type == "application/pdf":
-            process_qr_code_images(
-                update,
-                pdf2image.convert_from_bytes(doc.get_file().download_as_bytearray()),
-            )
-        elif doc.mime_type in ["image/jpeg", "image/png"]:
-            process_qr_code_images(
-                update,
-                [Image.open(io.BytesIO(doc.get_file().download_as_bytearray()))]
-            )
-        elif doc.mime_type == "image/heic":
-            heif_file = pyheif.read(io.BytesIO(doc.get_file().download_as_bytearray()))
-            image = Image.frombytes(mode=heif_file.mode, size=heif_file.size, data=heif_file.data)
-            process_qr_code_images(
-                update,
-                [image],
-            )
-        else:
-            update.message.reply_text(f'Mime-Type "{doc.mime_type}" not supported!')
-            logger.warning(f'Mime-Type "{doc.mime_type}" not supported!')
+        try:
+            images = bytes_to_images(doc.mime_type, doc.get_file().download_as_bytearray())
+            process_qr_code_images(update, images)
+        except FileToImagesError as e:
+            update.message.reply_text(str(e))
 
 
 def on_text(update: Update, context: CallbackContext):

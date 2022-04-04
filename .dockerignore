@@ -9,3 +9,5 @@ data/
 .idea/
 staticfiles/
 mediafiles/
+webpack-stats.json
+static/webpack_bundles/

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+{% load byte_format %}
+
+{% block title %}{% translate "CWA Notifier" %}{% endblock %}
+
+{% block main %}
+
+    <h2>{% translate "General Information" %}</h2>
+
+    <table class="table table-borderless w-auto">
+        <tr>
+            <th scope="row">{% translate "Description" %}</th>
+            <td>{{ object.description }}</td>
+        </tr>
+        <tr>
+            <th scope="row">{% translate "Address" %}</th>
+            <td>{{ object.address }}</td>
+        </tr>
+        <tr>
+            <th scope="row">{% translate "App" %}</th>
+            <td><p>{{ object.provider }}</p></td>
+        </tr>
+        <tr>
+            <th scope="row">{% translate "Location ID" %}</th>
+            <td><p>{{ object.location_id | bytes_to_hex }}</p></td>
+        </tr>
+        <tr>
+            <th scope="row">{% translate "Location ID Hash" %}</th>
+            <td><p>{{ object.location_id_hash | bytes_to_hex }}</p></td>
+        </tr>
+        <tr>
+            <th scope="row">{% translate "UUID" %}</th>
+            <td><p>{% if object.pk %}{{ object.uuid }}{% endif %}</p></td>
+        </tr>
+        <tr>
+            <th scope="row">{% translate "URL" %}</th>
+            <td><p>{{ object.url }}</p></td>
+        </tr>
+    </table>
+
+    {% if warnings_table is not None %}
+        {% if warnings_table.rows|length > 0 %}
+            <div class="text-end mb-2">
+                <p>{{ warnings_table.rows|length }} Warnings found.</p>
+            </div>
+
+            <form method="post" id="result-form">
+                {% csrf_token %}
+
+                {% load django_tables2 %}
+                {% render_table warnings_table %}
+            </form>
+        {% else %}
+            {% translate "No warnings found" %}
+        {% endif %}
+    {% endif %}
+{% endblock %}

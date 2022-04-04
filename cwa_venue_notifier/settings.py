@@ -52,11 +52,21 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 INSTALLED_APPS = [
     'location',
     'app_telegram',
+    'app_web',
+    'app_api',
     'proto',
     'warning',
 
+    'fontawesomefree',
+    'django_tables2',
     'django_celery_results',
     'python_telegram_bot_django_persistence',
+    'sitetree',
+    'bootstrap5',
+    'crispy_forms',
+    'crispy_bootstrap5',
+    'webpack_loader',
+    'rest_framework',
 
     'django.contrib.admin',
     'django.contrib.auth',
@@ -81,14 +91,20 @@ ROOT_URLCONF = 'cwa_venue_notifier.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                # default
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                # additional
+                'django.template.context_processors.i18n',
+                'django.template.context_processors.csrf',
+                # custom
+                'app_web.context_processors.global_vars',
             ],
         },
     },
@@ -146,6 +162,9 @@ USE_L10N = True
 
 USE_TZ = True
 
+# Crispy forms config
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
@@ -154,12 +173,31 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 STATICFILES_DIRS = [
-    # BASE_DIR / "static"
+    BASE_DIR / "static"
 ]
 
 # Media files
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "mediafiles"
+
+# use sitetree without database
+SITETREE_DYNAMIC_ONLY = True
+
+# Theming -> don't load Bootstrap from external sources (CDNs)
+BOOTSTRAP5 = {
+    # "css_url": {"href": "https://cdn.jsdelivr.net/npm/bootstrap-dark-5@1.1.3/dist/css/bootstrap-dark.min.css"},
+}
+
+DJANGO_TABLES2_TEMPLATE = "django_tables2/bootstrap4.html"
+
+WEBPACK_LOADER = {
+  'DEFAULT': {
+    'CACHE': not DEBUG,
+    'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.json'),
+    'POLL_INTERVAL': 0.1,
+    'IGNORE': [r'.+\.hot-update.js', r'.+\.map'],
+  }
+}
 
 
 # Default primary key field type
@@ -173,7 +211,7 @@ CELERY_RESULT_SERIALIZER = "pickle"
 CELERY_ACCEPT_CONTENT = ['pickle']
 CELERY_RESULT_BACKEND = 'django-cache'
 CELERY_CACHE_BACKEND = 'default'
-CELERY_BROKER_URL = env.url("BROKER_URL")
+CELERY_BROKER_URL = env.str("BROKER_URL")
 CELERY_BEAT_SCHEDULE = {
     "download_packages": {
         "task": "warning.tasks.download_packages",
@@ -188,3 +226,6 @@ CWA_MAC_KEY = bytes.fromhex("4357412d4d41432d4b4559")
 CWA_ENCRYPTION_KEY = bytes.fromhex("4357412d454e4352595054494f4e2d4b4559")
 
 TELEGRAM_TOKEN = env.str("TELEGRAM_TOKEN")
+
+GLOBAL_IMPRINT_URL = env.str("GLOBAL_IMPRINT_URL")
+GLOBAL_PRIVACY_URL = env.str("GLOBAL_PRIVACY_URL")

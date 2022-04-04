@@ -1,0 +1,89 @@
+{% extends "bootstrap.html" %}
+{% load static %}
+{% load i18n %}
+{% load sitetree %}
+
+{% block bootstrap5_content %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-3">
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent"
+                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+                {% if user.is_authenticated %}
+                    {% sitetree_menu from "main" include "trunk,topmenu" template "sitetree/menu_bootstrap5.html" %}
+                {% endif %}
+
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarScrollingDropdown" role="button"
+                               data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa fa-fw fa-user"></i>&nbsp;{{ user.get_full_name }}
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarScrollingDropdown">
+                                {% if user.is_staff %}
+                                    <li>
+                                        <a class="dropdown-item" href="{% url "admin:index" %}">
+                                            <i class="fa fa-fw fa-tools"></i>&nbsp;
+                                            {% translate "Administration" %}
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                {% endif %}
+                                <li>
+                                    <a class="dropdown-item" href="{% url "logout" %}">
+                                        <i class="fa fa-fw fa-sign-out-alt"></i>&nbsp;
+                                        Logout
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{% url "login" %}">Login</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        {% if user.is_authenticated and request.resolver_match.view_name != "index" %}
+            {% sitetree_breadcrumbs from "main" template "sitetree/breadcrumbs_bootstrap4.html" %}
+        {% endif %}
+
+        {# Display django.contrib.messages as Bootstrap alerts #}
+        {% include "bootstrap5/messages.html" %}
+
+        <h1 class="h2">{% block bootstrap5_title %}{% block title %}{% sitetree_page_hint from "main" %}{% endblock %}{% endblock %}</h1>
+
+        <main>
+            {% block main %}
+            {% endblock %}
+        </main>
+
+        <aside>
+            {% block sidebar %}
+            {% endblock %}
+        </aside>
+
+    </div>
+
+    <footer>
+        <ul class="list-unstyled list-inline text-center">
+
+            <li class="list-inline-item"><a href="{{ global_privacy_url }}"
+                                            target="_blank">{% translate "Privacy" %}</a></li>
+            <li class="list-inline-item"><a href="{{ global_imprint_url }}"
+                                            target="_blank">{% translate "Imprint" %}</a></li>
+        </ul>
+    </footer>
+
+{% endblock %}

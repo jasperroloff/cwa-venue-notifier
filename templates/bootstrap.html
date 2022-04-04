@@ -1,0 +1,43 @@
+<!doctype html>
+{% load static %}
+{% load i18n %}
+{% load render_bundle from webpack_loader %}
+{% load get_files from webpack_loader %}
+
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE|default:'en' }}">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- common css -->
+    {% render_bundle 'main' 'css' %}
+
+    <!-- fontawesome css -->
+    <link href="{% static 'fontawesomefree/css/fontawesome.min.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'fontawesomefree/css/solid.min.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'fontawesomefree/css/brands.min.css' %}" rel="stylesheet" type="text/css">
+
+    <!-- Bootstrap CSS -->
+    <meta name="color-scheme" content="light">
+    {% render_bundle 'theme-light' 'css' attrs='media="(prefers-color-scheme: light)"' %}
+    {% render_bundle 'theme-dark' 'css' attrs='media="(prefers-color-scheme: dark)"' %}
+
+    <!-- Page title -->
+    <title>{% block bootstrap5_title %}TITLE{% endblock %}</title>
+
+    {% block bootstrap5_extra_head %}{% endblock %}
+</head>
+<body>
+
+{% block bootstrap5_before_content %}{% endblock %}
+{% block bootstrap5_content %} CONTENT {% endblock %}
+{% block bootstrap5_after_content %}{% endblock %}
+{% block bootstrap5_extra_script %}{% endblock %}
+
+{% render_bundle 'main' 'js' %}
+
+</body>
+
+</html>

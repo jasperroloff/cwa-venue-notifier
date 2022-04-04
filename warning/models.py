@@ -85,7 +85,7 @@ class CheckInRecordType:
     )
 
 
-class CheckInRecord:
+class CheckInRecord(models.Model):
     start_interval_number = models.BigIntegerField(
         editable=False,
         verbose_name=_("Start interval number"),
@@ -104,6 +104,7 @@ class CheckInRecord:
     type = models.CharField(
         editable=False,
         choices=CheckInRecordType.choices,
+        max_length=30,
     )
 
     @property
@@ -119,6 +120,15 @@ class CheckInRecord:
     @property
     def duration(self) -> datetime.timedelta:
         return datetime.timedelta(minutes=10 * self.period)
+
+    class Meta:
+        managed = False
+
+    def __eq__(self, other: "CheckInRecord"):
+        return self.start_interval_number == other.start_interval_number and self.period == other.period and self.transmission_risk_level == other.transmission_risk_level
+
+    def __hash__(self):
+        return hash(('start_interval_number', self.start_interval_number, 'period', self.period, 'transmission_risk_level', self.transmission_risk_level))
 
 
 class TraceTimeIntervalWarning(models.Model):

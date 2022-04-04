@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}{% translate "CWA Notifier" %}{% endblock %}
+
+{% block main %}
+    <p>
+    {% translate "This website allows you to check a CWA-QR-Code for warnings. You can also be notified about future warnings." %}
+    </p>
+
+    {% load crispy_forms_tags %}
+    {% crispy form form.helper %}
+
+    {% if table is not None %}
+        {% if table.rows|length > 0 %}
+            <div class="text-end mb-2">
+                <p>{{ table.rows|length }} Location(s) found.</p>
+            </div>
+
+            <form method="post" id="result-form">
+                {% csrf_token %}
+
+                {% load django_tables2 %}
+                {% render_table table %}
+            </form>
+        {% else %}
+            {% translate "No locations found" %}
+        {% endif %}
+    {% endif %}
+
+{% endblock %}

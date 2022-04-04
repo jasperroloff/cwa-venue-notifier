@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% load webpack_loader %}
+{% load i18n %}
+
+{% block title %}{% translate "CWA Notifier" %}{% endblock %}
+
+{% block main %}
+    <video id="qrcode-scanner-video"></video>
+    {% render_bundle 'qrcode' 'js' %}
+{% endblock %}

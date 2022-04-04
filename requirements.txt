@@ -1,19 +1,65 @@
+# django framework
 Django==4.0.2
-pycryptodome==3.14.1
+
+# for downloading warning packages
+requests==2.27.1
+
+# read QR codes from images and pdf's
+Pillow==9.0.1
+pyheif==0.6.1
 pyzbar==0.1.8
 pdf2image==1.16.0
-Pillow==9.0.1
-requests==2.27.1
-pyheif==0.6.1
+
+# to decode CWA-Payloads
 protobuf==3.19.4
-python-telegram-bot==13.11
+
+# decrypt warnings
+pycryptodome==3.14.1
+
+# pretty print tables
 tabulate==0.8.9
+
+# celery
 celery==5.2.3
+django-celery-results==2.2.0
+#celery-singleton==0.3.1
+
+# redis cache
 redis==4.1.4
 hiredis==2.0.0
+django-redis==5.2.0
+
+# postgresql client
 psycopg2==2.9.3
 psycopg2-binary==2.9.3
+
+# to read settings from environment variables
 django-environ==0.8.1
-django-celery-results==2.2.0
-django-redis==5.2.0
+
+# telegram
 python-telegram-bot-django-persistence==0.1.7
+python-telegram-bot==13.11
+
+# bootstrap
+django-bootstrap-v5==1.0.11
+
+# fontawesome
+fontawesomefree==6.0.0
+
+# crispy forms
+django-crispy-forms==1.14.0
+crispy-bootstrap5==0.6
+
+# navigation
+django-sitetree==1.17.1
+
+# sass/scss/js
+django-webpack-loader==1.4.1
+
+# pretty tables
+django-tables2==2.4.1
+
+# django-rest-framework
+djangorestframework==3.13.1
+django-filter==21.1
+markdown==3.3.6
