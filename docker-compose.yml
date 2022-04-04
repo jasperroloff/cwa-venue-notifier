@@ -6,6 +6,9 @@ x-django-tpl: &django-tpl
   environment: &django-env-tpl
     DATABASE_URL: "postgres://cwa_notifier:changeme@db/cwa_notifier"
     CACHE_URL: "rediscache://redis"
+    CACHE_URL: "redis://redis/1"
+    CELERY_CACHE_URL: "redis://redis/2"
+    CELERY_RESULT_URL: "redis://redis/3"
     BROKER_URL: "amqp://rabbitmq"
     # TODO: customize the following ones
     SECRET_KEY: "django-insecure-t*m4njw77bnd-uotk$hbjfy+#cyu#e90hl=$v9^ybtx-572(0a" # python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
