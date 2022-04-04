@@ -5,7 +5,6 @@ x-django-tpl: &django-tpl
   restart: unless-stopped
   environment: &django-env-tpl
     DATABASE_URL: "postgres://cwa_notifier:changeme@db/cwa_notifier"
-    CACHE_URL: "rediscache://redis"
     CACHE_URL: "redis://redis/1"
     CELERY_CACHE_URL: "redis://redis/2"
     CELERY_RESULT_URL: "redis://redis/3"
