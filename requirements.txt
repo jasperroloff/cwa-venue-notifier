@@ -1,5 +1,5 @@
 # django framework
-Django==4.0.4
+Django==4.0.6
 
 # for downloading warning packages
 requests==2.27.1
